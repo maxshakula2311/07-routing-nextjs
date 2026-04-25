@@ -11,15 +11,21 @@ import css from './NotesPage.module.css';
 import { fetchNotes } from '@/lib/api';
 import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
+import type { Note } from '@/types/note';
 
-const NotesClient = () => {
+interface NotesFilterClientProps {
+  tag?: string;
+}
+
+const NotesFilterClient = ({ tag }: NotesFilterClientProps) => {
   const [search, setSearch] = useState<string>('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
 
   const openModal = () => setIsModalOpen(true);
-
   const closeModal = () => setIsModalOpen(false);
+
   const { data, isLoading, isError, isSuccess, error } = useQuery({
     queryKey: ['notes', search, page],
     queryFn: () => fetchNotes({ search, page }),
@@ -32,6 +38,20 @@ const NotesClient = () => {
     setSearch(value);
     setPage(1);
   }, 800);
+
+  useEffect(() => {
+    if (isSuccess && data?.notes) {
+      if (tag && tag !== 'all') {
+        const filtered = data.notes.filter(
+          note => note.tag.toLowerCase() === tag.toLowerCase()
+        );
+        setFilteredNotes(filtered);
+      } else {
+        setFilteredNotes(data.notes);
+      }
+    }
+  }, [data, tag, isSuccess]);
+
   useEffect(() => {
     console.log(search);
   }, [search]);
@@ -63,8 +83,8 @@ const NotesClient = () => {
             <div>Something wrong...</div>
           </>
         )}
-        {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
-        {isSuccess && data.notes.length === 0 && <p>No movies found for your request.</p>}
+        {isSuccess && filteredNotes.length > 0 && <NoteList notes={filteredNotes} />}
+        {isSuccess && filteredNotes.length === 0 && <p>No notes found for your filter.</p>}
       </div>
       {isModalOpen && (
         <Modal onClose={closeModal}>
@@ -75,4 +95,4 @@ const NotesClient = () => {
   );
 };
 
-export default NotesClient;
+export default NotesFilterClient;
