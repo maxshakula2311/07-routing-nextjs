@@ -25,7 +25,7 @@ const NoteFilters = async ({ params }: NoteFiltersProps) => {
   return (
     <>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <NotesFilterClient initialTag={category} />
+        <NotesFilterClient tag={category} />
       </HydrationBoundary>
     </>
   );
