@@ -11,7 +11,7 @@ const Sidebar = () => {
         <ul className={css.list}>
           {tags.map(tag => (
             <li key={tag}>
-              <Link href={`/notes/filter/${tag.toLowerCase()}`} className={css.link}>
+              <Link href={`/notes/filter/${tag === 'All' ? 'all' : tag}`} className={css.link}>
                 {tag}
               </Link>
             </li>
