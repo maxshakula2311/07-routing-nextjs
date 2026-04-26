@@ -14,10 +14,10 @@ import Modal from '@/components/Modal/Modal';
 import type { Note } from '@/types/note';
 
 interface NotesFilterClientProps {
-  tag?: string;
+  initialTag?: string;
 }
 
-const NotesFilterClient = ({ tag }: NotesFilterClientProps) => {
+const NotesFilterClient = ({ initialTag }: NotesFilterClientProps) => {
   const [search, setSearch] = useState<string>('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,16 +41,16 @@ const NotesFilterClient = ({ tag }: NotesFilterClientProps) => {
 
   useEffect(() => {
     if (isSuccess && data?.notes) {
-      if (tag && tag !== 'all') {
+      if (initialTag && initialTag !== 'all') {
         const filtered = data.notes.filter(
-          note => note.tag.toLowerCase() === tag.toLowerCase()
+          note => note.tag.toLowerCase() === initialTag.toLowerCase()
         );
         setFilteredNotes(filtered);
       } else {
         setFilteredNotes(data.notes);
       }
     }
-  }, [data, tag, isSuccess]);
+  }, [data, initialTag, isSuccess]);
 
   useEffect(() => {
     console.log(search);

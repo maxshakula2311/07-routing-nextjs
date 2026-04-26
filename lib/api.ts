@@ -14,6 +14,7 @@ const fetchAxios = axios.create({
 interface FetchNotesProps {
   search: string;
   page: number;
+  tag?: string;
 }
 
 interface CreateNoteProps {
@@ -26,9 +27,10 @@ interface FetchNotesResponse {
   totalPages: number;
 }
 
-export async function fetchNotes({ search, page }: FetchNotesProps): Promise<FetchNotesResponse> {
+export async function fetchNotes({ search, page, tag }: FetchNotesProps): Promise<FetchNotesResponse> {
   const response = await fetchAxios.get<FetchNotesResponse>('notes', {
     params: {
+      tag,
       search,
       page,
       perPage: PER_PAGE,
