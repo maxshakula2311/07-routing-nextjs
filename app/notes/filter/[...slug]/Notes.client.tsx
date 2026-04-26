@@ -1,34 +1,32 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { useDebouncedCallback } from 'use-debounce';
+import { useEffect, useState } from "react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useDebouncedCallback } from "use-debounce";
 
-import NoteList from '@/components/NoteList/NoteList';
-import NoteForm from '@/components/NoteForm/NoteForm';
-import SearchBox from '@/components/SearchBox/SearchBox';
-import css from './NotesPage.module.css';
-import { fetchNotes } from '@/lib/api';
-import Pagination from '@/components/Pagination/Pagination';
-import Modal from '@/components/Modal/Modal';
-import type { Note } from '@/types/note';
+import NoteList from "@/components/NoteList/NoteList";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import css from "./NotesPage.module.css";
+import { fetchNotes } from "@/lib/api";
+import Pagination from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
 
-interface NotesFilterClientProps {
-  initialTag?: string;
+interface NotesClientProps {
+  initialTag: string | undefined;
 }
 
-const NotesFilterClient = ({ initialTag }: NotesFilterClientProps) => {
-  const [search, setSearch] = useState<string>('');
+const NotesClient = ({ initialTag }: NotesClientProps) => {
+  const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
 
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
 
+  const closeModal = () => setIsModalOpen(false);
   const { data, isLoading, isError, isSuccess, error } = useQuery({
-    queryKey: ['notes', search, page],
-    queryFn: () => fetchNotes({ search, page }),
+    queryKey: ["notes", search, page, initialTag],
+    queryFn: () => fetchNotes({ search, page, tag: initialTag }),
     refetchOnMount: false,
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
@@ -38,20 +36,6 @@ const NotesFilterClient = ({ initialTag }: NotesFilterClientProps) => {
     setSearch(value);
     setPage(1);
   }, 800);
-
-  useEffect(() => {
-    if (isSuccess && data?.notes) {
-      if (initialTag && initialTag !== 'all') {
-        const filtered = data.notes.filter(
-          note => note.tag.toLowerCase() === initialTag.toLowerCase()
-        );
-        setFilteredNotes(filtered);
-      } else {
-        setFilteredNotes(data.notes);
-      }
-    }
-  }, [data, initialTag, isSuccess]);
-
   useEffect(() => {
     console.log(search);
   }, [search]);
@@ -68,7 +52,11 @@ const NotesFilterClient = ({ initialTag }: NotesFilterClientProps) => {
         <header className={css.toolbar}>
           {<SearchBox onSearch={handleSearch} />}
           {isSuccess && data.totalPages > 1 && (
-            <Pagination totalPages={data.totalPages} page={page} setPage={setPage} />
+            <Pagination
+              totalPages={data.totalPages}
+              page={page}
+              setPage={setPage}
+            />
           )}
 
           {
@@ -80,11 +68,13 @@ const NotesFilterClient = ({ initialTag }: NotesFilterClientProps) => {
         {isLoading && <div>Loading posts...</div>}
         {isError && (
           <>
-            <div>Something wrong...</div>
+            <div>Something went wrong...</div>
           </>
         )}
-        {isSuccess && filteredNotes.length > 0 && <NoteList notes={filteredNotes} />}
-        {isSuccess && filteredNotes.length === 0 && <p>No notes found for your filter.</p>}
+        {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+        {isSuccess && data.notes.length === 0 && (
+          <p>No movies found for your request.</p>
+        )}
       </div>
       {isModalOpen && (
         <Modal onClose={closeModal}>
@@ -95,4 +85,4 @@ const NotesFilterClient = ({ initialTag }: NotesFilterClientProps) => {
   );
 };
 
-export default NotesFilterClient;
+export default NotesClient;
